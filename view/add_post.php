@@ -1,0 +1,123 @@
+<?php
+$page_title = "Add Post - MedioSoft";
+//auth
+include_once('../view/component/dashboard_sidebar.php');
+require_once('../controller/check_login_status.php');
+if(!check_login_status()){
+    header('location: login.php');
+}
+require_once('../model/usersModel.php');
+require_once('../model/postCategoryModel.php');
+$get_current_user_info = get_current_user_info();
+
+//get current user id
+$user_id = get_current_user_id();
+
+//get all post category data
+$category_data = get_all_category_data();
+
+?>
+
+<!-- including header -->
+<?php include_once('../view/component/dashboard_header.php'); ?>
+
+
+<div class="main-section">
+                <div class="container">
+                    <div class="row">
+                        <div class="column-thirty-three">
+                            <div class="dashboard-sidebar">
+                                <?php echo get_sidebar();?>
+                            </div>
+                        </div>
+                        <div class="column-sixty-six">
+                            <div class="form-container">
+                                <div class="form-title">
+                                    <h3>Add Post</h3>
+                                </div>
+
+                                <div class="medio-form">
+                                    <form id="post_form" action="#" method="POST" enctype="multipart/form-data" onsubmit="addPost()">
+
+                                        <label for="image">Upload Post Image</label>
+                                        <input type="file" name="image" id="image">
+                                        <label for="title">Post Title </label>
+                                        <input type="text" name="title" id="title">
+                                        <label for="description">Description </label>
+
+                                        <textarea name="description" id="description" cols="30" rows="10"></textarea>
+
+                                        <label for="category">Select a Category</label>
+
+                                        <select name="category" id="category">
+                                            <?php
+                                                foreach($category_data as $category){
+                                                    
+                                                    ?>
+                                                        <option value="<?php echo $category['id']; ?>"><?php echo $category['category_name']; ?></option>
+                                                    <?php
+                                                }
+                                            ?>
+                                        </select>
+
+                                        <label for="date">Date</label>
+
+                                        <input type="date" name="date" id="date">
+
+
+                                        <input type="submit" value="Submit" name="submit">
+
+                                    </form>
+                                </div>
+                                <div id="status_messages"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+    
+    <script>
+    function addPost() {
+        event.preventDefault();
+
+        let image = document.getElementById('image').value;
+        let title = document.getElementById('title').value;
+        let description = document.getElementById('description').value;
+        let category = document.getElementById('category').value;
+        let date = document.getElementById('date').value;
+
+        if(image === ''){
+            document.getElementById('status_messages').innerHTML = '<p id="error_message">You must select an image!</p>';
+        }else if(title === ''){
+            document.getElementById('status_messages').innerHTML = '<p id="error_message">You must fill Post title!</p>';
+        }else if(description === ''){
+            document.getElementById('status_messages').innerHTML = '<p id="error_message">You must fill the description!</p>';
+        }else if(category === ''){
+            document.getElementById('status_messages').innerHTML = '<p id="error_message">You must select a category!</p>';
+        }else if(date === ''){
+            document.getElementById('status_messages').innerHTML = '<p id="error_message">You must provide the Post date!</p>';
+        }else{
+        let formData = new FormData(document.getElementById('post_form'));
+        formData.append('added_by', <?php echo $user_id; ?>);
+        formData.append('action', 'add_post');
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.open('POST', '../controller/postsController.php', true);
+
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById('status_messages').innerHTML = this.responseText;
+
+            }
+        }
+        xhttp.send(formData);
+        }
+    }
+</script>
+
+<!-- including footer -->
+<?php include_once('../view/component/footer.php'); ?>
